@@ -1,0 +1,8 @@
+node_modules/
+.env
+out/
+assets/audio/*.mp3
+assets/images/*.png
+assets/images/*.jpg
+.DS_Store
+*.log
