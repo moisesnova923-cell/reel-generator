@@ -246,8 +246,15 @@
           <input type="text" id="b-agencia" placeholder="Mi Agencia" />
         </div>
         <div class="field">
-          <label>URL del logo</label>
-          <input type="text" id="b-logo" placeholder="https://..." />
+          <label>Logo (PNG/JPG)</label>
+          <div style="display:flex;align-items:center;gap:12px">
+            <img id="b-logo-preview" src="" alt="" style="height:48px;border-radius:8px;display:none;background:#fff;padding:4px" />
+            <label class="btn btn-secondary btn-sm" style="cursor:pointer;margin:0">
+              📁 Subir logo
+              <input type="file" id="b-logo-file" accept="image/*" style="display:none" onchange="subirLogo(this)" />
+            </label>
+            <span id="b-logo-status" style="font-size:12px;color:var(--text-dim)"></span>
+          </div>
         </div>
         <div class="field">
           <label>Fuente</label>

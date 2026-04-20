@@ -311,10 +311,33 @@ function useTemplate(id) {
 }
 
 // ── Branding ──────────────────────────────────────────────────
+async function subirLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById("b-logo-status");
+  status.textContent = "Subiendo...";
+  const form = new FormData();
+  form.append("logo", file);
+  const res = await fetch(`${API}/api/branding/logo`, { method: "POST", body: form }).then(r => r.json()).catch(e => ({ error: e.message }));
+  if (res.ok) {
+    document.getElementById("b-logo-preview").src = res.logoUrl;
+    document.getElementById("b-logo-preview").style.display = "block";
+    status.textContent = "✅ Logo guardado";
+    toast("Logo subido correctamente");
+  } else {
+    status.textContent = "❌ Error al subir";
+    toast(res.error || "Error al subir logo", "error");
+  }
+}
+
 async function loadBranding() {
   const b = await fetch(`${API}/api/branding`).then(r => r.json()).catch(() => ({}));
   document.getElementById("b-agencia").value = b.agencia || "";
-  document.getElementById("b-logo").value = b.logoUrl || "";
+  if (b.logoUrl) {
+    document.getElementById("b-logo-preview").src = b.logoUrl;
+    document.getElementById("b-logo-preview").style.display = "block";
+    document.getElementById("b-logo-status").textContent = "Logo cargado";
+  }
   document.getElementById("b-fuente").value = b.fuente || "Arial Black";
   document.getElementById("b-fondo").value = b.colorFondo || "#0a0a1a";
   document.getElementById("b-fondo-text").value = b.colorFondo || "#0a0a1a";
@@ -334,7 +357,6 @@ async function loadBranding() {
 async function saveBranding() {
   const body = {
     agencia: document.getElementById("b-agencia").value,
-    logoUrl: document.getElementById("b-logo").value,
     fuente: document.getElementById("b-fuente").value,
     colorFondo: document.getElementById("b-fondo-text").value,
     colorPrimario: document.getElementById("b-primario-text").value,
