@@ -30,27 +30,45 @@ async function generarImagenVertexAI(prompt, outputPath) {
 
   const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/imagen-3.0-generate-001:predict`;
 
-  const { data } = await axios.post(
-    endpoint,
-    {
-      instances: [{ prompt: promptCompleto }],
-      parameters: {
-        sampleCount: 1,
-        aspectRatio: "9:16",
-        safetyFilterLevel: "block_some",
-        personGeneration: "allow_adult",
-      },
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${token.token}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  console.log(`🖼  Vertex AI → proyecto: ${projectId} | location: ${location}`);
+  console.log(`🖼  Prompt: ${promptCompleto.substring(0, 120)}...`);
+  console.log(`🔑  Token obtenido: ${token.token ? "OK" : "VACÍO"}`);
 
+  let data;
+  try {
+    const resp = await axios.post(
+      endpoint,
+      {
+        instances: [{ prompt: promptCompleto }],
+        parameters: {
+          sampleCount: 1,
+          aspectRatio: "9:16",
+          safetyFilterLevel: "block_some",
+          personGeneration: "allow_adult",
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token.token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    data = resp.data;
+    console.log(`✅ Vertex respondió HTTP 200`);
+  } catch (axiosErr) {
+    const status = axiosErr.response?.status;
+    const body = JSON.stringify(axiosErr.response?.data || axiosErr.message);
+    console.error(`❌ Vertex HTTP ${status}: ${body}`);
+    throw new Error(`Vertex HTTP ${status}: ${body}`);
+  }
+
+  console.log(`📦 Predictions recibidas: ${data.predictions?.length ?? 0}`);
   const base64 = data.predictions?.[0]?.bytesBase64Encoded;
-  if (!base64) throw new Error("Imagen 3 no devolvió imagen");
+  if (!base64) {
+    console.error(`❌ Vertex no devolvió imagen. Respuesta completa: ${JSON.stringify(data)}`);
+    throw new Error(`Vertex no devolvió imagen. Respuesta: ${JSON.stringify(data)}`);
+  }
 
   const buffer = Buffer.from(base64, "base64");
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
