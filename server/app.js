@@ -31,6 +31,26 @@ app.use("/api/branding", brandingRouter);
 app.use("/api/templates", templatesRouter);
 app.use("/api/reels", reelsRouter);
 
+// Debug: ver datos crudos de ElevenLabs
+app.get("/api/voices/debug", async (req, res) => {
+  try {
+    const { default: axios } = await import("axios");
+    const { data } = await axios.get("https://api.elevenlabs.io/v1/voices", {
+      headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY },
+    });
+    const resumen = data.voices.map((v) => ({
+      nombre: v.name,
+      categoria: v.category,
+      labels: v.labels,
+      language: v.language,
+      fine_tuning_language: v.fine_tuning?.language,
+    }));
+    res.json({ total: resumen.length, voces: resumen });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Listar voces ElevenLabs
 app.get("/api/voices", async (req, res) => {
   try {
