@@ -368,16 +368,39 @@ async function loadVoices() {
       <div class="tab" onclick="filterVoices('premade',this)">Prediseñadas</div>
       <div class="tab" onclick="filterVoices('cloned',this)">Clonadas</div>
     </div>
+    <audio id="voice-preview-audio" style="display:none"></audio>
     <div class="voice-grid" id="voice-grid">
       ${voices.map(v => `
-        <div class="voice-card ${v.id === selectedId ? 'selected' : ''}" data-id="${v.id}" data-cat="${v.categoria}" onclick="selectVoice('${v.id}','${v.nombre}',this)">
+        <div class="voice-card ${v.id === selectedId ? 'selected' : ''}" data-id="${v.id}" data-cat="${v.categoria}">
           <div class="vname">${v.nombre}</div>
           <div class="vlabel">${v.labels?.gender || ''} ${v.labels?.accent ? '· ' + v.labels.accent : ''} ${v.labels?.age ? '· ' + v.labels.age : ''}</div>
           <div class="vlabel" style="margin-top:4px;color:var(--text-dim)">${v.categoria || ''}</div>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            ${v.previewUrl ? `<button class="btn btn-secondary btn-sm" style="flex:1" onclick="previewVoz('${v.previewUrl}', this)">▶ Escuchar</button>` : ''}
+            <button class="btn btn-primary btn-sm" style="flex:1" onclick="selectVoice('${v.id}','${v.nombre}',this.closest('.voice-card'))">✓ Usar</button>
+          </div>
         </div>
       `).join("")}
     </div>
   `;
+}
+
+let currentAudio = null;
+
+function previewVoz(url, btn) {
+  // Detener audio anterior
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+  document.querySelectorAll(".btn-preview-playing").forEach(b => {
+    b.textContent = "▶ Escuchar"; b.classList.remove("btn-preview-playing");
+  });
+
+  const audio = new Audio(url);
+  currentAudio = audio;
+  btn.textContent = "⏹ Detener";
+  btn.classList.add("btn-preview-playing");
+
+  audio.play().catch(() => toast("No se pudo reproducir el audio", "error"));
+  audio.onended = () => { btn.textContent = "▶ Escuchar"; btn.classList.remove("btn-preview-playing"); };
 }
 
 function filterVoices(cat, tabEl) {

@@ -40,7 +40,7 @@ app.get("/api/voices", async (req, res) => {
     });
     const voces = data.voices
       .filter((v) => v.labels?.gender === "female" || !v.labels?.gender)
-      .map((v) => ({ id: v.voice_id, nombre: v.name, categoria: v.category, labels: v.labels }));
+      .map((v) => ({ id: v.voice_id, nombre: v.name, categoria: v.category, labels: v.labels, previewUrl: v.preview_url }));
     res.json(voces);
   } catch (err) {
     res.status(500).json({ error: err.message });
