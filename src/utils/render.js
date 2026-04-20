@@ -8,28 +8,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ENTRY_POINT = path.resolve(__dirname, "../remotion/index.jsx");
 const PUBLIC_DIR = path.resolve(__dirname, "../../public");
 
-function copiarDirectorio(src, dest) {
-  fs.mkdirSync(dest, { recursive: true });
-  for (const item of fs.readdirSync(src)) {
-    const srcPath = path.join(src, item);
-    const destPath = path.join(dest, item);
-    if (fs.statSync(srcPath).isDirectory()) {
-      copiarDirectorio(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  }
-}
-
 export async function renderizarReel(props, outputPath, onProgress) {
-  const bundleLocation = await bundle({
-    entryPoint: ENTRY_POINT,
-    publicDir: PUBLIC_DIR,
-  });
+  // publicDir es opcional — solo se pasa si existe la carpeta
+  const bundleOpts = { entryPoint: ENTRY_POINT };
+  if (fs.existsSync(PUBLIC_DIR)) bundleOpts.publicDir = PUBLIC_DIR;
 
-  // Copiar assets al bundle para garantizar que el servidor los encuentre
-  console.log("   Copiando assets al bundle...");
-  copiarDirectorio(PUBLIC_DIR, bundleLocation);
+  const bundleLocation = await bundle(bundleOpts);
 
   const composition = await selectComposition({
     serveUrl: bundleLocation,

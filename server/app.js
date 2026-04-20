@@ -39,18 +39,36 @@ app.get("/api/voices", async (req, res) => {
       headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY },
     });
     const voces = data.voices
-      .map((v) => ({
-        id: v.voice_id,
-        nombre: v.name,
-        categoria: v.category,
-        labels: v.labels,
-        previewUrl: v.preview_url,
-        idioma: v.labels?.language || v.fine_tuning?.language || "en",
-      }))
+      .map((v) => {
+        const idioma =
+          v.labels?.language ||
+          v.labels?.accent ||
+          v.fine_tuning?.language ||
+          v.language ||
+          "en";
+        return {
+          id: v.voice_id,
+          nombre: v.name,
+          categoria: v.category,
+          labels: v.labels,
+          previewUrl: v.preview_url,
+          idioma: idioma.toLowerCase(),
+          genero: (v.labels?.gender || "").toLowerCase(),
+        };
+      })
       .sort((a, b) => {
-        const esA = a.idioma?.startsWith("es") ? 0 : 1;
-        const esB = b.idioma?.startsWith("es") ? 0 : 1;
-        return esA - esB;
+        // Español primero, luego inglés, luego resto
+        const prioridadIdioma = (i) => {
+          if (i.startsWith("es")) return 0;
+          if (i.startsWith("en")) return 1;
+          return 2;
+        };
+        const diff = prioridadIdioma(a.idioma) - prioridadIdioma(b.idioma);
+        if (diff !== 0) return diff;
+        // Dentro del mismo idioma: femeninas primero
+        const fA = a.genero === "female" ? 0 : 1;
+        const fB = b.genero === "female" ? 0 : 1;
+        return fA - fB;
       });
     res.json(voces);
   } catch (err) {
