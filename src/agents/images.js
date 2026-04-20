@@ -85,6 +85,25 @@ const PROMPTS_ALTERNATIVOS = [
   (p) => `${p.split(".")[0]}. Scenic view, high quality photography.`,
 ];
 
+async function buscarImagenPexels(query, outputPath) {
+  const apiKey = process.env.PEXELS_API_KEY;
+  if (!apiKey) throw new Error("PEXELS_API_KEY no configurada");
+
+  const { data } = await axios.get("https://api.pexels.com/v1/search", {
+    headers: { Authorization: apiKey },
+    params: { query, per_page: 5, orientation: "portrait" },
+  });
+
+  if (!data.photos?.length) throw new Error(`Pexels sin resultados para "${query}"`);
+
+  const foto = data.photos[Math.floor(Math.random() * data.photos.length)];
+  const respuesta = await axios.get(foto.src.large2x || foto.src.large, { responseType: "arraybuffer" });
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, respuesta.data);
+  console.log(`✅ Pexels (fallback 429): "${query}" → ${outputPath}`);
+  return outputPath;
+}
+
 export async function obtenerImagen(escena, outputPath) {
   for (let intento = 0; intento < PROMPTS_ALTERNATIVOS.length; intento++) {
     try {
@@ -92,11 +111,17 @@ export async function obtenerImagen(escena, outputPath) {
       if (intento > 0) console.log(`   Reintento ${intento} con prompt simplificado...`);
       return await generarImagenVertexAI(promptFinal, outputPath);
     } catch (err) {
+      const es429 = err.message.includes("429");
       console.warn(`⚠️  Vertex intento ${intento + 1} falló: ${err.message}`);
+      // Si es cuota agotada, no tiene sentido reintentar — ir directo a Pexels
+      if (es429) break;
       if (intento < PROMPTS_ALTERNATIVOS.length - 1) await new Promise((r) => setTimeout(r, 800));
     }
   }
-  throw new Error("Vertex AI no pudo generar la imagen tras 3 intentos.");
+
+  // Fallback temporal por cuota Vertex agotada (429)
+  console.warn("⚠️  Usando Pexels como fallback temporal (cuota Vertex agotada)");
+  return await buscarImagenPexels(escena.pexelsQuery || escena.promptImagen, outputPath);
 }
 
 export async function obtenerImagenesParaReel(escenas, carpetaSalida) {
