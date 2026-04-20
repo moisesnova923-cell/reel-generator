@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import "dotenv/config";
 import Template from "./models/Template.js";
 import Branding from "./models/Branding.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export async function runSeed() {
   const conectar = mongoose.connection.readyState === 0;
@@ -21,7 +26,7 @@ const templates = [
       { texto: "Las tarifas cambian cada 12 horas. Escríbenos ahora y asegura tu cupo antes de que suba el precio.", duracion: 10, promptImagen: "Passport and boarding pass on dark elegant surface, golden light, luxury travel concept, vertical", pexelsQuery: "passport boarding pass luxury dark" },
     ],
     cta: { texto: "✈ ESCRÍBENOS AHORA", subTexto: "Cupos limitados · Tarifas desde $650" },
-    estiloOverride: { colorFondo: "#0a0a1a", colorPrimario: "#f0c040" },
+    estiloOverride: { colorFondo: "#021024", colorPrimario: "#E8C67A" },
   },
   {
     nombre: "Tour Europa 15 Días",
@@ -103,21 +108,30 @@ for (const t of templates) {
   console.log(`✅ Template creado: ${t.nombre}`);
 }
 
+// Cargar logo Legacy Travel desde archivo base64
+let logoUrl = "";
+const logoPath = path.join(__dirname, "logo_b64.txt");
+if (fs.existsSync(logoPath)) {
+  const raw = fs.readFileSync(logoPath, "utf8").trim();
+  logoUrl = raw.startsWith("data:") ? raw : `data:image/png;base64,${raw}`;
+}
+
 await Branding.deleteMany({});
 await Branding.create({
-  agencia: "Legacy Solutions Travel",
-  colorFondo: "#0a0a1a",
-  colorPrimario: "#f0c040",
-  colorTexto: "#ffffff",
+  agencia: "Legacy Travel",
+  colorFondo: "#021024",
+  colorPrimario: "#5483B3",
+  colorTexto: "#C1E8FF",
   fuente: "Arial Black",
+  logoUrl,
   voiceId: "EXAVITQu4vr4xnSDxMaL",
   velocidadVoz: 0.9,
   estabilidadVoz: 0.65,
   similarityVoz: 0.8,
   ctaTexto: "✈ ESCRÍBENOS AHORA",
-  ctaSubTexto: "Cupos limitados · Legacy Solutions Travel",
+  ctaSubTexto: "Tu destino está sobre el horizonte",
 });
-console.log("✅ Branding base creado");
+console.log("✅ Branding Legacy Travel cargado");
 
   console.log("\n🎉 Seed completo — 7 templates cargados en MongoDB");
   if (conectar) await mongoose.disconnect();
