@@ -38,9 +38,24 @@ app.get("/api/voices", async (req, res) => {
     const { data } = await axios.get("https://api.elevenlabs.io/v1/voices", {
       headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY },
     });
+    // Normaliza nombres de idioma a código ISO de 2 letras
+    const normalizarIdioma = (raw = "") => {
+      const r = raw.toLowerCase().trim();
+      const mapa = {
+        spanish: "es", español: "es", espanol: "es", castellano: "es",
+        english: "en", inglés: "en", ingles: "en",
+        portuguese: "pt", português: "pt", portugues: "pt",
+        french: "fr", français: "fr", frances: "fr",
+        italian: "it", italiano: "it",
+        german: "de", deutsch: "de", alemán: "de",
+        catalan: "ca", basque: "eu", galician: "gl",
+      };
+      return mapa[r] || r.slice(0, 2) || "en";
+    };
+
     const voces = data.voices
       .map((v) => {
-        const idioma =
+        const rawIdioma =
           v.labels?.language ||
           v.labels?.accent ||
           v.fine_tuning?.language ||
@@ -52,20 +67,14 @@ app.get("/api/voices", async (req, res) => {
           categoria: v.category,
           labels: v.labels,
           previewUrl: v.preview_url,
-          idioma: idioma.toLowerCase(),
+          idioma: normalizarIdioma(rawIdioma),
           genero: (v.labels?.gender || "").toLowerCase(),
         };
       })
       .sort((a, b) => {
-        // Español primero, luego inglés, luego resto
-        const prioridadIdioma = (i) => {
-          if (i.startsWith("es")) return 0;
-          if (i.startsWith("en")) return 1;
-          return 2;
-        };
-        const diff = prioridadIdioma(a.idioma) - prioridadIdioma(b.idioma);
+        const prioridad = (i) => i.startsWith("es") ? 0 : i.startsWith("en") ? 1 : 2;
+        const diff = prioridad(a.idioma) - prioridad(b.idioma);
         if (diff !== 0) return diff;
-        // Dentro del mismo idioma: femeninas primero
         const fA = a.genero === "female" ? 0 : 1;
         const fB = b.genero === "female" ? 0 : 1;
         return fA - fB;
