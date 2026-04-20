@@ -21,6 +21,7 @@ const templateSchema = new mongoose.Schema({
     fuente: String,
   },
   activo: { type: Boolean, default: true },
+  creadoPorIA: { type: Boolean, default: false },
 }, { timestamps: true });
 
 export default mongoose.model("Template", templateSchema);

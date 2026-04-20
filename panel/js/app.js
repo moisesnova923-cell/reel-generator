@@ -126,10 +126,13 @@ async function generarConIA() {
       incluirLogo: c.incluirLogo ?? true,
     };
 
-    // Mostrar razonamiento
+    // Mostrar razonamiento + aviso si creó template nuevo
     const razDiv = document.getElementById("ai-razonamiento");
     razDiv.style.display = "block";
-    razDiv.innerHTML = `🤖 <strong>IA:</strong> ${c.razonamiento}`;
+    const badgeNuevo = c.templateCreado
+      ? `<span style="background:var(--accent);color:#fff;padding:2px 8px;border-radius:20px;font-size:11px;margin-left:6px">✨ Template nuevo: "${c.nombreTemplateCreado}"</span>`
+      : "";
+    razDiv.innerHTML = `🤖 <strong>IA:</strong>${badgeNuevo} ${c.razonamiento}`;
 
     toast("¡Configuración aplicada! Revisa y lanza el reel");
   } catch (e) {
@@ -253,6 +256,7 @@ async function loadTemplates() {
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
           <strong>${t.nombre}</strong>
+          ${t.creadoPorIA ? '<span style="background:var(--accent);color:#fff;padding:1px 7px;border-radius:20px;font-size:10px;margin-left:6px">🤖 IA</span>' : ''}
           <span style="margin-left:8px;font-size:12px;color:var(--text-dim)">${t.categoria} · ${t.escenas?.length || 0} escenas</span>
         </div>
         <div class="actions-row">
