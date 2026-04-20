@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server/app.js",
+    "seed": "node server/seed.js",
     "dev:server": "node --watch server/app.js",
     "studio": "remotion studio src/remotion/index.jsx",
     "render": "node src/generate.js",

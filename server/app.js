@@ -47,6 +47,17 @@ app.get("/api/voices", async (req, res) => {
   }
 });
 
+// Seed inicial
+app.post("/api/seed", async (req, res) => {
+  try {
+    const { runSeed } = await import("./seed.js");
+    const result = await runSeed();
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Fallback → panel
 app.get("/{*path}", (req, res) => {
   res.sendFile(path.resolve(__dirname, "../panel/index.html"));
