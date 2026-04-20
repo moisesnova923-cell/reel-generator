@@ -1,4 +1,5 @@
 node_modules/
+vertex-key.json
 .env
 out/
 assets/audio/*.mp3

@@ -1,6 +1,6 @@
 import path from "path";
 import { generarVozOff } from "./voice.js";
-import { generarImagenesParaReel } from "./images.js";
+import { obtenerImagenesParaReel } from "./images.js";
 import { renderizarReel } from "../utils/render.js";
 
 export async function crearReel(template) {
@@ -18,9 +18,10 @@ export async function crearReel(template) {
     estabilidad: estilo?.estabilidad,
   });
 
-  // 2. Generar imágenes con Gemini
-  console.log("\n🖼️  Generando imágenes con Gemini...");
-  const imagenes = await generarImagenesParaReel(escenas, path.join(carpeta, "imagenes"));
+  // 2. Obtener imágenes (Gemini si disponible, Pexels como fallback)
+  const fuente = process.env.GEMINI_API_KEY ? "Gemini" : "Pexels";
+  console.log(`\n🖼️  Obteniendo imágenes vía ${fuente}...`);
+  const imagenes = await obtenerImagenesParaReel(escenas, path.join(carpeta, "imagenes"));
 
   // 3. Armar props para Remotion
   const props = {
