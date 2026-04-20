@@ -59,44 +59,7 @@ async function generarImagenVertexAI(prompt, outputPath) {
   return outputPath;
 }
 
-// ── Pexels (fallback gratuito) ────────────────────────────────
-
-async function buscarImagenPexels(query, outputPath) {
-  const apiKey = process.env.PEXELS_API_KEY;
-  if (!apiKey) throw new Error("PEXELS_API_KEY no configurada");
-
-  const { data } = await axios.get("https://api.pexels.com/v1/search", {
-    headers: { Authorization: apiKey },
-    params: { query, per_page: 5, orientation: "portrait" },
-  });
-
-  if (!data.photos?.length) throw new Error(`Pexels sin resultados para "${query}"`);
-
-  const foto = data.photos[Math.floor(Math.random() * data.photos.length)];
-  const respuesta = await axios.get(foto.src.large2x || foto.src.large, {
-    responseType: "arraybuffer",
-  });
-
-  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  fs.writeFileSync(outputPath, respuesta.data);
-  console.log(`✅ Imagen Pexels: "${query}" → ${outputPath}`);
-  return outputPath;
-}
-
-// ── Picsum Photos (fallback sin API key) ─────────────────────
-
-async function descargarImagenPicsum(outputPath) {
-  // 1080×1920 vertical, seed aleatorio para variedad
-  const seed = Math.floor(Math.random() * 1000);
-  const url = `https://picsum.photos/seed/${seed}/1080/1920`;
-  const respuesta = await axios.get(url, { responseType: "arraybuffer" });
-  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  fs.writeFileSync(outputPath, respuesta.data);
-  console.log(`✅ Imagen Picsum (fallback): ${outputPath}`);
-  return outputPath;
-}
-
-// ── Función principal con fallback automático ─────────────────
+// ── Función principal — solo Vertex AI ───────────────────────
 
 const PROMPTS_ALTERNATIVOS = [
   (p) => p,
@@ -105,36 +68,17 @@ const PROMPTS_ALTERNATIVOS = [
 ];
 
 export async function obtenerImagen(escena, outputPath) {
-  const vertexDisponible = fs.existsSync(
-    path.resolve(__dirname, "../../vertex-key.json")
-  );
-  const pexelsDisponible = !!process.env.PEXELS_API_KEY;
-
-  if (vertexDisponible) {
-    for (let intento = 0; intento < PROMPTS_ALTERNATIVOS.length; intento++) {
-      try {
-        const promptFinal = PROMPTS_ALTERNATIVOS[intento](escena.promptImagen);
-        if (intento > 0) console.log(`   Reintento ${intento} con prompt simplificado...`);
-        return await generarImagenVertexAI(promptFinal, outputPath);
-      } catch (err) {
-        if (intento === PROMPTS_ALTERNATIVOS.length - 1) {
-          console.warn(`⚠️  Imagen 3 falló tras ${PROMPTS_ALTERNATIVOS.length} intentos.`);
-          if (pexelsDisponible) console.warn("   Usando Pexels como fallback...");
-        }
-      }
-      await new Promise((r) => setTimeout(r, 500));
+  for (let intento = 0; intento < PROMPTS_ALTERNATIVOS.length; intento++) {
+    try {
+      const promptFinal = PROMPTS_ALTERNATIVOS[intento](escena.promptImagen);
+      if (intento > 0) console.log(`   Reintento ${intento} con prompt simplificado...`);
+      return await generarImagenVertexAI(promptFinal, outputPath);
+    } catch (err) {
+      console.warn(`⚠️  Vertex intento ${intento + 1} falló: ${err.message}`);
+      if (intento < PROMPTS_ALTERNATIVOS.length - 1) await new Promise((r) => setTimeout(r, 800));
     }
   }
-
-  if (pexelsDisponible) {
-    return await buscarImagenPexels(
-      escena.pexelsQuery || escena.promptImagen,
-      outputPath
-    );
-  }
-
-  // Fallback sin API key: imagen aleatoria vertical de Picsum Photos
-  return await descargarImagenPicsum(outputPath);
+  throw new Error("Vertex AI no pudo generar la imagen tras 3 intentos.");
 }
 
 export async function obtenerImagenesParaReel(escenas, carpetaSalida) {
