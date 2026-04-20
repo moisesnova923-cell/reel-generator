@@ -7,3 +7,4 @@ assets/images/*.png
 assets/images/*.jpg
 .DS_Store
 *.log
+public/**

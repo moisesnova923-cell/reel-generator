@@ -1,4 +1,4 @@
-import { AbsoluteFill, Img, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Img, interpolate, useCurrentFrame, useVideoConfig, cancelRender, continueRender, delayRender } from "remotion";
 
 export const ImagenEscena = ({ imagen }) => {
   const frame = useCurrentFrame();

@@ -1,4 +1,4 @@
-import { AbsoluteFill, Audio, Sequence, useVideoConfig, staticFile } from "remotion";
+import { AbsoluteFill, Audio, Sequence, useVideoConfig } from "remotion";
 import { Fondo } from "../components/Fondo.jsx";
 import { SubtituloEscena } from "../components/Subtitulos.jsx";
 import { CTAFinal } from "../components/CTA.jsx";
@@ -23,7 +23,7 @@ export const ReelInstagram = ({ titulo, escenas, audioPath, cta, estilo }) => {
     <AbsoluteFill>
       <Fondo colorFondo={colorFondo} colorPrimario={colorPrimario} duracionTotal={duracionTotal} />
 
-      {audioPath && <Audio src={staticFile(audioPath)} />}
+      {audioPath && <Audio src={audioPath} />}
 
       {secuencias.map((s) => (
         <Sequence key={s.index} from={s.inicio} durationInFrames={s.duracion}>
