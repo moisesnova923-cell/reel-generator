@@ -364,23 +364,32 @@ async function loadVoices() {
 
   container.innerHTML = `
     <div class="tabs">
-      <div class="tab active" onclick="filterVoices('all',this)">Todas</div>
-      <div class="tab" onclick="filterVoices('premade',this)">Prediseñadas</div>
-      <div class="tab" onclick="filterVoices('cloned',this)">Clonadas</div>
+      <div class="tab active" onclick="filterVoices('all',this)">🌐 Todas</div>
+      <div class="tab" onclick="filterVoices('es',this)">🇪🇸 Español</div>
+      <div class="tab" onclick="filterVoices('en',this)">🇺🇸 English</div>
+      <div class="tab" onclick="filterVoices('female',this)">♀ Mujer</div>
+      <div class="tab" onclick="filterVoices('male',this)">♂ Hombre</div>
     </div>
-    <audio id="voice-preview-audio" style="display:none"></audio>
     <div class="voice-grid" id="voice-grid">
-      ${voices.map(v => `
-        <div class="voice-card ${v.id === selectedId ? 'selected' : ''}" data-id="${v.id}" data-cat="${v.categoria}">
-          <div class="vname">${v.nombre}</div>
-          <div class="vlabel">${v.labels?.gender || ''} ${v.labels?.accent ? '· ' + v.labels.accent : ''} ${v.labels?.age ? '· ' + v.labels.age : ''}</div>
-          <div class="vlabel" style="margin-top:4px;color:var(--text-dim)">${v.categoria || ''}</div>
+      ${voices.map(v => {
+        const lang = v.idioma || 'en';
+        const gender = v.labels?.gender || '';
+        const flag = lang.startsWith('es') ? '🇪🇸' : lang.startsWith('pt') ? '🇧🇷' : lang.startsWith('fr') ? '🇫🇷' : '🇺🇸';
+        return `
+        <div class="voice-card ${v.id === selectedId ? 'selected' : ''}"
+          data-id="${v.id}" data-lang="${lang}" data-gender="${gender}">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="vname">${v.nombre}</div>
+            <span style="font-size:18px">${flag}</span>
+          </div>
+          <div class="vlabel">${gender} ${v.labels?.accent ? '· ' + v.labels.accent : ''} ${v.labels?.age ? '· ' + v.labels.age : ''}</div>
+          <div class="vlabel" style="margin-top:2px;color:var(--text-dim)">${v.categoria || ''}</div>
           <div style="display:flex;gap:6px;margin-top:10px">
             ${v.previewUrl ? `<button class="btn btn-secondary btn-sm" style="flex:1" onclick="previewVoz('${v.previewUrl}', this)">▶ Escuchar</button>` : ''}
             <button class="btn btn-primary btn-sm" style="flex:1" onclick="selectVoice('${v.id}','${v.nombre}',this.closest('.voice-card'))">✓ Usar</button>
           </div>
-        </div>
-      `).join("")}
+        </div>`;
+      }).join("")}
     </div>
   `;
 }
@@ -403,11 +412,19 @@ function previewVoz(url, btn) {
   audio.onended = () => { btn.textContent = "▶ Escuchar"; btn.classList.remove("btn-preview-playing"); };
 }
 
-function filterVoices(cat, tabEl) {
+function filterVoices(filter, tabEl) {
   document.querySelectorAll(".tabs .tab").forEach(t => t.classList.remove("active"));
   tabEl.classList.add("active");
   document.querySelectorAll(".voice-card").forEach(c => {
-    c.style.display = (cat === "all" || c.dataset.cat === cat) ? "" : "none";
+    const lang = c.dataset.lang || "en";
+    const gender = c.dataset.gender || "";
+    let show = false;
+    if (filter === "all") show = true;
+    else if (filter === "es") show = lang.startsWith("es");
+    else if (filter === "en") show = lang.startsWith("en");
+    else if (filter === "female") show = gender === "female";
+    else if (filter === "male") show = gender === "male";
+    c.style.display = show ? "" : "none";
   });
 }
 
