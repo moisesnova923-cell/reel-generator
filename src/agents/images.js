@@ -78,6 +78,19 @@ async function buscarImagenPexels(query, outputPath) {
   return outputPath;
 }
 
+// ── Picsum Photos (fallback sin API key) ─────────────────────
+
+async function descargarImagenPicsum(outputPath) {
+  // 1080×1920 vertical, seed aleatorio para variedad
+  const seed = Math.floor(Math.random() * 1000);
+  const url = `https://picsum.photos/seed/${seed}/1080/1920`;
+  const respuesta = await axios.get(url, { responseType: "arraybuffer" });
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, respuesta.data);
+  console.log(`✅ Imagen Picsum (fallback): ${outputPath}`);
+  return outputPath;
+}
+
 // ── Función principal con fallback automático ─────────────────
 
 const PROMPTS_ALTERNATIVOS = [
@@ -115,7 +128,8 @@ export async function obtenerImagen(escena, outputPath) {
     );
   }
 
-  throw new Error("Configura vertex-key.json o PEXELS_API_KEY para obtener imágenes.");
+  // Fallback sin API key: imagen aleatoria vertical de Picsum Photos
+  return await descargarImagenPicsum(outputPath);
 }
 
 export async function obtenerImagenesParaReel(escenas, carpetaSalida) {
