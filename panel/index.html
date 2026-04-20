@@ -78,6 +78,24 @@
     <h2>Generar Reel</h2>
     <p class="subtitle">Configura y lanza la generación de un nuevo reel</p>
 
+    <!-- AI Chat Box -->
+    <div class="card" style="margin-bottom:20px;border:1px solid var(--accent)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span style="font-size:22px">🤖</span>
+        <div>
+          <h3 style="margin:0">Describe tu reel con IA</h3>
+          <p style="margin:0;font-size:12px;color:var(--text-dim)">El agente configura todo automáticamente según lo que escribas</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <textarea id="ai-descripcion" rows="3" placeholder="Ej: Quiero un reel sobre el paquete migratorio a España, con voz femenina cálida, subtítulos fluidos animados palabra por palabra, fotos de ciudades europeas, transiciones dinámicas y colores dorados de la marca..." style="flex:1;resize:vertical;font-size:13px"></textarea>
+        <button class="btn btn-primary" onclick="generarConIA()" id="btn-ai" style="align-self:flex-end;white-space:nowrap">
+          ✨ Configurar con IA
+        </button>
+      </div>
+      <div id="ai-razonamiento" style="display:none;margin-top:12px;padding:10px 14px;background:rgba(84,131,179,0.12);border-radius:8px;font-size:12px;color:var(--text-dim);line-height:1.6"></div>
+    </div>
+
     <div class="grid-2">
       <div>
         <div class="card">

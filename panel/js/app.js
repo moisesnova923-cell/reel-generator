@@ -77,6 +77,69 @@ async function loadDashboard() {
   }
 }
 
+// ── Agente IA ─────────────────────────────────────────────────
+async function generarConIA() {
+  const descripcion = document.getElementById("ai-descripcion").value.trim();
+  if (!descripcion) { toast("Escribe cómo quieres el reel", "error"); return; }
+
+  const btn = document.getElementById("btn-ai");
+  btn.disabled = true;
+  btn.textContent = "⏳ Pensando...";
+
+  try {
+    // Pasar las voces disponibles al agente para que elija la más apropiada
+    const voces = await fetch(`${API}/api/voices`).then(r => r.json()).catch(() => []);
+    const resp = await fetch(`${API}/api/ai/config`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ descripcion, voces }),
+    }).then(r => r.json());
+
+    if (!resp.ok) { toast(resp.error || "Error IA", "error"); return; }
+
+    const c = resp.config;
+
+    // Auto-rellenar formulario
+    if (c.templateId) {
+      document.getElementById("gen-template").value = c.templateId;
+      document.getElementById("gen-template").dispatchEvent(new Event("change"));
+    }
+    if (c.voiceId) document.getElementById("gen-voice").value = c.voiceId;
+    if (c.colorFondo) {
+      document.getElementById("gen-bg").value = c.colorFondo;
+      document.getElementById("gen-bg-text").value = c.colorFondo;
+    }
+    if (c.colorPrimario) {
+      document.getElementById("gen-color").value = c.colorPrimario;
+      document.getElementById("gen-color-text").value = c.colorPrimario;
+    }
+    if (c.duracionEscena) {
+      document.getElementById("gen-speed").value = c.duracionEscena > 10 ? 0.8 : 0.95;
+      document.getElementById("gen-speed-val").textContent = document.getElementById("gen-speed").value;
+    }
+
+    // Guardar estilo IA para enviarlo al generar
+    window._aiConfig = {
+      estiloSubtitulo: c.estiloSubtitulo || "fluido",
+      estiloTransicion: c.estiloTransicion || "dinamico",
+      estiloImagen: c.estiloImagen || "ciudad",
+      incluirLogo: c.incluirLogo ?? true,
+    };
+
+    // Mostrar razonamiento
+    const razDiv = document.getElementById("ai-razonamiento");
+    razDiv.style.display = "block";
+    razDiv.innerHTML = `🤖 <strong>IA:</strong> ${c.razonamiento}`;
+
+    toast("¡Configuración aplicada! Revisa y lanza el reel");
+  } catch (e) {
+    toast("Error conectando con IA: " + e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "✨ Configurar con IA";
+  }
+}
+
 // ── Generate ──────────────────────────────────────────────────
 let currentReelId = null;
 let genPollInterval = null;
@@ -127,6 +190,8 @@ async function generarReel() {
     colorFondo: document.getElementById("gen-bg-text").value,
     colorPrimario: document.getElementById("gen-color-text").value,
     fuente: document.getElementById("gen-font").value || undefined,
+    // Incluir config de IA si fue configurado
+    ...(window._aiConfig || {}),
   };
 
   const btn = document.getElementById("btn-generate");

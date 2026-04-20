@@ -91,7 +91,11 @@ async function procesarReel(reel, template, branding, config) {
       })),
       audioPath: audioBase64,
       cta: template.cta || { texto: branding.ctaTexto, subTexto: branding.ctaSubTexto },
-      estilo: { colorFondo, colorPrimario, colorTexto: "#ffffff", fuente },
+      estilo: {
+        colorFondo, colorPrimario, colorTexto: "#ffffff", fuente,
+        estiloSubtitulo: config.estiloSubtitulo || "fluido",
+        estiloTransicion: config.estiloTransicion || "dinamico",
+      },
     };
 
     const videoPath = path.join(carpeta, "reel.mp4");

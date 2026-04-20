@@ -9,6 +9,7 @@ import "dotenv/config";
 import brandingRouter from "./routes/branding.js";
 import templatesRouter from "./routes/templates.js";
 import reelsRouter from "./routes/reels.js";
+import aiRouter from "./routes/ai.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -30,6 +31,7 @@ app.use("/videos", express.static(outDir));
 app.use("/api/branding", brandingRouter);
 app.use("/api/templates", templatesRouter);
 app.use("/api/reels", reelsRouter);
+app.use("/api/ai", aiRouter);
 
 // Debug: ver datos crudos de ElevenLabs
 app.get("/api/voices/debug", async (req, res) => {

@@ -6,7 +6,11 @@ import { ImagenEscena } from "../components/ImagenEscena.jsx";
 
 export const ReelInstagram = ({ titulo, escenas, audioPath, cta, estilo }) => {
   const { fps } = useVideoConfig();
-  const { colorFondo, colorPrimario, colorTexto } = estilo;
+  const {
+    colorFondo, colorPrimario, colorTexto,
+    estiloSubtitulo = "caja",
+    estiloTransicion = "suave",
+  } = estilo;
 
   let frameActual = 0;
   const secuencias = escenas.map((escena, i) => {
@@ -27,12 +31,18 @@ export const ReelInstagram = ({ titulo, escenas, audioPath, cta, estilo }) => {
 
       {secuencias.map((s) => (
         <Sequence key={s.index} from={s.inicio} durationInFrames={s.duracion}>
-          {s.imagen && <ImagenEscena imagen={s.imagen} />}
+          {s.imagen && (
+            <ImagenEscena
+              imagen={s.imagen}
+              indiceEscena={s.index}
+              estiloTransicion={estiloTransicion}
+            />
+          )}
           <SubtituloEscena
             texto={s.texto}
             colorPrimario={colorPrimario}
             colorTexto={colorTexto}
-            esUltima={s.index === secuencias.length - 1}
+            estiloSubtitulo={estiloSubtitulo}
           />
         </Sequence>
       ))}
