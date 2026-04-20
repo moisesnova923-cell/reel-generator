@@ -9,14 +9,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // ── Vertex AI — Imagen 3 ──────────────────────────────────────
 
 async function generarImagenVertexAI(prompt, outputPath) {
-  const keyFile = path.resolve(__dirname, "../../vertex-key.json");
   const projectId = process.env.VERTEX_PROJECT_ID || "edito-de-video-493901";
   const location = process.env.VERTEX_LOCATION || "us-central1";
 
-  const auth = new GoogleAuth({
-    keyFile,
-    scopes: ["https://www.googleapis.com/auth/cloud-platform"],
-  });
+  // Credenciales: variable de entorno VERTEX_KEY_JSON (JSON como string) o archivo local
+  let authConfig;
+  if (process.env.VERTEX_KEY_JSON) {
+    authConfig = { credentials: JSON.parse(process.env.VERTEX_KEY_JSON), scopes: ["https://www.googleapis.com/auth/cloud-platform"] };
+  } else {
+    const keyFile = path.resolve(__dirname, "../../vertex-key.json");
+    authConfig = { keyFile, scopes: ["https://www.googleapis.com/auth/cloud-platform"] };
+  }
+
+  const auth = new GoogleAuth(authConfig);
 
   const client = await auth.getClient();
   const token = await client.getAccessToken();
