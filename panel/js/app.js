@@ -399,5 +399,28 @@ async function selectVoice(id, nombre, el) {
   toast(`Voz "${nombre}" seleccionada como predeterminada`);
 }
 
+// ── Seed templates ────────────────────────────────────────────
+async function cargarTemplatesBase() {
+  const btn = document.getElementById("btn-seed");
+  if (!confirm("¿Cargar los 7 templates base? Esto reemplazará los templates existentes.")) return;
+  btn.disabled = true;
+  btn.textContent = "⏳ Cargando...";
+  try {
+    const res = await fetch(`${API}/api/seed`, { method: "POST" });
+    const data = await res.json();
+    if (data.ok) {
+      toast(`${data.templates} templates cargados correctamente`);
+      loadTemplates();
+    } else {
+      toast(data.error || "Error al cargar templates", "error");
+    }
+  } catch (err) {
+    toast("Error de conexión", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📦 Cargar 7 templates base";
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────
 loadDashboard();
