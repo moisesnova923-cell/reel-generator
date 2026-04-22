@@ -11,6 +11,7 @@ function showPage(id) {
   if (id === "branding") loadBranding();
   if (id === "voices") loadVoices();
   if (id === "generate") loadGeneratePage();
+  if (id === "posts") loadPostsPage();
 }
 
 document.querySelectorAll(".nav-item").forEach(el => {
@@ -551,6 +552,114 @@ async function cargarTemplatesBase() {
     btn.disabled = false;
     btn.textContent = "📦 Cargar 7 templates base";
   }
+}
+
+// ── Posts & Carrusel ─────────────────────────────────────────
+const postsHistory = [];
+
+async function loadPostsPage() {
+  const sel = document.getElementById("post-template");
+  if (sel && sel.options.length <= 1) {
+    const templates = await fetch(`${API}/api/templates`).then(r => r.json()).catch(() => []);
+    templates.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t._id;
+      opt.textContent = `${t.nombre} (${t.escenas?.length || 0} slides)`;
+      sel.appendChild(opt);
+    });
+  }
+  renderPostsHistory();
+}
+
+function updateTipoPost() {
+  const tipo = document.querySelector('input[name="post-tipo"]:checked')?.value;
+  document.getElementById("tipo-carrusel-label").style.borderColor = tipo === "carrusel" ? "var(--accent)" : "var(--border)";
+  document.getElementById("tipo-post-label").style.borderColor = tipo === "post" ? "var(--accent)" : "var(--border)";
+}
+
+async function generarPost() {
+  const templateId = document.getElementById("post-template").value;
+  if (!templateId) return toast("Selecciona un template", "error");
+
+  const tipo = document.querySelector('input[name="post-tipo"]:checked')?.value || "carrusel";
+  const colorFondo = document.getElementById("post-bg").value;
+  const colorPrimario = document.getElementById("post-color").value;
+
+  document.getElementById("post-progress").style.display = "block";
+  document.getElementById("post-result").style.display = "none";
+  document.getElementById("post-status-text").textContent = "Iniciando generación...";
+  document.getElementById("post-prog-fill").style.width = "10%";
+
+  try {
+    const res = await fetch(`${API}/api/posts/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ templateId, tipo, config: { colorFondo, colorPrimario } }),
+    }).then(r => r.json());
+
+    if (!res.ok) throw new Error(res.error || "Error al generar");
+
+    const { jobId, total } = res;
+    document.getElementById("post-status-text").textContent = `Renderizando ${total} slide(s)...`;
+
+    // Polling de estado
+    await pollPostStatus(jobId, total);
+
+  } catch (err) {
+    toast(err.message, "error");
+    document.getElementById("post-progress").style.display = "none";
+  }
+}
+
+async function pollPostStatus(jobId, total) {
+  const maxEspera = 300; // 5 min
+  let intentos = 0;
+  return new Promise((resolve, reject) => {
+    const interval = setInterval(async () => {
+      intentos++;
+      if (intentos > maxEspera) {
+        clearInterval(interval);
+        reject(new Error("Tiempo de espera agotado"));
+        return;
+      }
+      try {
+        const status = await fetch(`${API}/api/posts/${jobId}/status`).then(r => r.json());
+        const pct = status.listo ? 100 : Math.min(10 + (status.slides / total) * 85, 95);
+        document.getElementById("post-prog-fill").style.width = `${pct}%`;
+        document.getElementById("post-status-text").textContent = status.listo
+          ? "✅ Listo"
+          : `Renderizando slide ${status.slides}/${total}...`;
+
+        if (status.listo && status.zipUrl) {
+          clearInterval(interval);
+          document.getElementById("post-progress").style.display = "none";
+          document.getElementById("post-result").style.display = "block";
+          document.getElementById("post-download-btn").href = status.zipUrl;
+          postsHistory.unshift({ jobId, zipUrl: status.zipUrl, slides: total, fecha: new Date() });
+          renderPostsHistory();
+          toast("Imágenes listas para descargar");
+          resolve();
+        }
+      } catch (e) { /* continúa polling */ }
+    }, 3000);
+  });
+}
+
+function renderPostsHistory() {
+  const el = document.getElementById("posts-history");
+  if (!postsHistory.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🖼️</div>No hay posts generados todavía</div>`;
+    return;
+  }
+  el.innerHTML = postsHistory.map(p => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <span style="font-weight:600">📦 ${p.slides} slides</span>
+        <span style="color:var(--text-dim);font-size:12px;margin-left:12px">${new Date(p.fecha).toLocaleString("es")}</span>
+      </div>
+      <a href="${p.zipUrl}" download class="btn btn-secondary btn-sm">⬇ ZIP</a>
+    </div>
+  `).join("");
 }
 
 // ── Init ──────────────────────────────────────────────────────

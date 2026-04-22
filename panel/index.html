@@ -31,6 +31,9 @@
   <div class="nav-item" data-page="voices">
     <span class="icon">🎙️</span><span>Voces</span>
   </div>
+  <div class="nav-item" data-page="posts">
+    <span class="icon">🖼️</span><span>Posts & Carrusel</span>
+  </div>
 </nav>
 
 <!-- Main -->
@@ -358,6 +361,98 @@
   </section>
 
 </main>
+
+  <!-- POSTS & CARRUSEL -->
+  <section class="page" id="page-posts">
+    <h2>Posts & Carrusel</h2>
+    <p class="subtitle">Genera imágenes para feed y carruseles — descarga en ZIP</p>
+
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <h3>1. Tipo de contenido</h3>
+          <div class="field">
+            <label>Formato</label>
+            <div style="display:flex;gap:12px;margin-top:6px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;padding:14px;border:2px solid var(--border);border-radius:10px" id="tipo-carrusel-label">
+                <input type="radio" name="post-tipo" value="carrusel" id="tipo-carrusel" checked onchange="updateTipoPost()" />
+                <span>🎠 Carrusel<br/><small style="color:var(--text-dim)">Hasta 10 slides</small></span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;padding:14px;border:2px solid var(--border);border-radius:10px" id="tipo-post-label">
+                <input type="radio" name="post-tipo" value="post" id="tipo-post" onchange="updateTipoPost()" />
+                <span>🖼️ Post único<br/><small style="color:var(--text-dim)">1 imagen 4:5</small></span>
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <label>Template</label>
+            <select id="post-template">
+              <option value="">— Selecciona un template —</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>2. Estilo visual</h3>
+          <div class="grid-2">
+            <div class="field">
+              <label>Color fondo</label>
+              <div class="color-preview">
+                <input type="color" id="post-bg" value="#021024" style="width:50px"
+                  oninput="document.getElementById('post-bg-text').value=this.value" />
+                <input type="text" id="post-bg-text" value="#021024" style="flex:1"
+                  oninput="document.getElementById('post-bg').value=this.value" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Color primario</label>
+              <div class="color-preview">
+                <input type="color" id="post-color" value="#5483B3" style="width:50px"
+                  oninput="document.getElementById('post-color-text').value=this.value" />
+                <input type="text" id="post-color-text" value="#5483B3" style="flex:1"
+                  oninput="document.getElementById('post-color').value=this.value" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>3. Generar</h3>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px">
+          Cada slide se renderiza en alta resolución (2160×2700). El ZIP se descarga automáticamente cuando esté listo.
+        </p>
+        <button class="btn btn-primary" onclick="generarPost()" style="width:100%;justify-content:center">
+          🖼️ Generar imágenes
+        </button>
+
+        <div id="post-progress" style="display:none;margin-top:20px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div class="spinner" style="width:20px;height:20px;border-width:3px"></div>
+            <span id="post-status-text" style="font-size:13px;color:var(--text-dim)">Generando...</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="post-prog-fill" style="width:0%"></div></div>
+        </div>
+
+        <div id="post-result" style="display:none;margin-top:20px">
+          <div style="background:var(--success-bg,#0a2010);border-radius:10px;padding:16px;text-align:center">
+            <p style="color:#4caf50;font-size:15px;margin:0 0 12px">✅ ¡Imágenes listas!</p>
+            <a id="post-download-btn" href="#" download class="btn btn-primary" style="justify-content:center">
+              ⬇ Descargar ZIP
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial de posts -->
+    <div class="card" style="margin-top:20px">
+      <h3>Generados recientemente</h3>
+      <div id="posts-history">
+        <div class="empty-state"><div class="icon">🖼️</div>No hay posts generados todavía</div>
+      </div>
+    </div>
+  </section>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>

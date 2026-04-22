@@ -10,6 +10,7 @@ import brandingRouter from "./routes/branding.js";
 import templatesRouter from "./routes/templates.js";
 import reelsRouter from "./routes/reels.js";
 import aiRouter from "./routes/ai.js";
+import postsRouter from "./routes/posts.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -32,6 +33,12 @@ app.use("/api/branding", brandingRouter);
 app.use("/api/templates", templatesRouter);
 app.use("/api/reels", reelsRouter);
 app.use("/api/ai", aiRouter);
+app.use("/api/posts", postsRouter);
+
+// Servir ZIPs de posts
+const postsDir = path.resolve(__dirname, "../out/posts");
+fs.mkdirSync(postsDir, { recursive: true });
+app.use("/posts", express.static(postsDir));
 
 // Debug: ver datos crudos de ElevenLabs
 app.get("/api/voices/debug", async (req, res) => {

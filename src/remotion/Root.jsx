@@ -1,7 +1,22 @@
 import { Composition } from "remotion";
 import { ReelInstagram } from "./compositions/ReelInstagram.jsx";
+import { PostSlide } from "./compositions/PostSlide.jsx";
 
-export const RemotionRoot = () => (
+export const RemotionRoot = () => (<>
+  <Composition
+    id="PostSlide"
+    component={PostSlide}
+    durationInFrames={1}
+    fps={30}
+    width={2160}
+    height={2700}
+    defaultProps={{
+      slide: { texto: "Tu destino está sobre el horizonte", titulo: "Legacy Travel" },
+      estilo: { colorFondo: "#021024", colorPrimario: "#5483B3", colorTexto: "#ffffff", fuente: "Arial Black" },
+      cta: { texto: "✈ ESCRÍBENOS AHORA", subTexto: "Tu destino está sobre el horizonte" },
+      logoUrl: null, indice: 0, totalSlides: 1,
+    }}
+  />
   <Composition
     id="ReelInstagram"
     component={ReelInstagram}
@@ -27,4 +42,4 @@ export const RemotionRoot = () => (
       },
     }}
   />
-);
+</>);
