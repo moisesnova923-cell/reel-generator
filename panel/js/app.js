@@ -12,6 +12,7 @@ function showPage(id) {
   if (id === "voices") loadVoices();
   if (id === "generate") loadGeneratePage();
   if (id === "posts") loadPostsPage();
+  if (id === "editor") { setTimeout(() => edInit(), 50); }
 }
 
 document.querySelectorAll(".nav-item").forEach(el => {

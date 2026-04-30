@@ -34,6 +34,9 @@
   <div class="nav-item" data-page="posts">
     <span class="icon">🖼️</span><span>Posts & Carrusel</span>
   </div>
+  <div class="nav-item" data-page="editor">
+    <span class="icon">✏️</span><span>Editor de Slides</span>
+  </div>
 </nav>
 
 <!-- Main -->
@@ -454,9 +457,74 @@
     </div>
   </section>
 
+  <!-- EDITOR DE SLIDES -->
+  <section class="page editor-page" id="page-editor">
+    <div class="editor-layout">
+
+      <!-- Left: tools + slide list -->
+      <div class="editor-left">
+        <div class="editor-tools-panel">
+          <div class="panel-title">Agregar objeto</div>
+          <button class="tool-btn" onclick="edAddText()">
+            <span class="tool-icon">T</span><span>Texto</span>
+          </button>
+          <button class="tool-btn" onclick="edAddImage()">
+            <span class="tool-icon">🖼</span><span>Imagen</span>
+          </button>
+          <button class="tool-btn" onclick="edAddRect()">
+            <span class="tool-icon">▬</span><span>Rectángulo</span>
+          </button>
+          <button class="tool-btn" onclick="edAddCircle()">
+            <span class="tool-icon">●</span><span>Círculo</span>
+          </button>
+
+          <div class="tool-divider"></div>
+          <div class="panel-title">Fondo del slide</div>
+          <div class="tool-color-row">
+            <input type="color" id="ed-bg-color" value="#ffffff" oninput="edSetBackground(this.value)" />
+            <span>Color sólido</span>
+          </div>
+          <label class="tool-btn" style="cursor:pointer">
+            <span class="tool-icon">📁</span><span>Imagen fondo</span>
+            <input type="file" accept="image/*" style="display:none" onchange="edSetBgImage(this)">
+          </label>
+        </div>
+
+        <div class="editor-slides-panel">
+          <div class="slides-panel-header">
+            <span>Slides</span>
+            <button class="ed-add-slide-btn" onclick="edAddSlide()" title="Nuevo slide">+</button>
+          </div>
+          <div id="ed-slides-list"></div>
+        </div>
+      </div>
+
+      <!-- Center: canvas -->
+      <div class="editor-center">
+        <div class="editor-canvas-wrap" id="ed-canvas-wrapper">
+          <div id="ed-canvas" class="ed-canvas"></div>
+        </div>
+        <div class="editor-canvas-bar">
+          <button class="btn btn-secondary btn-sm" onclick="edUndo()">↩ Deshacer</button>
+          <button class="btn btn-secondary btn-sm" onclick="edDuplicateSlide()">⧉ Duplicar slide</button>
+          <button class="btn btn-primary btn-sm" id="ed-btn-export" onclick="edExportCurrent()">⬇ Exportar PNG</button>
+          <button class="btn btn-primary btn-sm" id="ed-btn-export-all" onclick="edExportAll()">⬇ Exportar todos</button>
+        </div>
+      </div>
+
+      <!-- Right: properties -->
+      <div class="editor-right">
+        <div class="panel-title" style="padding:16px 16px 8px">Propiedades</div>
+        <div id="ed-props-panel"></div>
+      </div>
+
+    </div>
+  </section>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script src="js/app.js"></script>
+<script src="js/editor.js"></script>
 </body>
 </html>
